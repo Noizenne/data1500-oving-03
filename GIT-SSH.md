@@ -59,7 +59,7 @@ Hver GitHub-konto må kjenne til den offentlige delen av SSH-nøkkelen din for �
 1.  **Kopier innholdet i den offentlige nøkkelen**. For konto `ghbruker`:
 
     ```powershell
-    cat ~/.ssh/id_ed25519_ghbruker.pub
+    $ cat ~/.ssh/id_ed25519_ghbruker.pub
     ```
 Og kopier outputen fra kommandoen i Terminal til utklippstavle på din datamaskin.
 
@@ -111,7 +111,7 @@ Nå som alt er konfigurert, må du bruke de nye `Host`-aliasene i Git-kommandoen
 -   **For å klone et repository** fra konto `ghbruker`:
 
     ```bash
-    git clone git@github.com-ghbruker:ghbruker/repository-navn.git
+    $ git clone git@github.com-ghbruker:ghbruker/repository-navn.git
     ```
     Hvis URL-en er kopiert med Github `Code`knappen, blir vil den mangler den spesifikke delen `-ghbruker` etter `git@github.com`.  
 
@@ -119,10 +119,10 @@ Nå som alt er konfigurert, må du bruke de nye `Host`-aliasene i Git-kommandoen
 
     ```bash
     # Naviger til repository-mappen
-    cd sti/til/ditt/repo
+    $ cd sti/til/ditt/repo
 
     # Oppdater URL-en til å bruke det nye aliaset
-    git remote set-url origin git@github.com-ghbruker:ghbruker/repository-navn.git
+    $ git remote set-url origin git@github.com-ghbruker:ghbruker/repository-navn.git
     ```
 
 ## MS Windows
@@ -131,25 +131,25 @@ Før du begynner, sørg for at du har **OpenSSH Client** installert. Moderne ver
 
 ---
 
-### Steg 1: Generer Unike SSH-Nøkler for Hver Konto
+### Steg 1: Generer Unik SSH-Nøkkel
 
-Det første steget er å generere et unikt SSH-nøkkel for din GitHub-konto.
+Det første steget er å generere en unik SSH-nøkkel for din GitHub-konto.
 
 1.  **Åpne PowerShell**.
 
-2.  **Generer en nøkkel for din første konto** (f.eks. `ghbruker`). Bruk `-f` flagget for å spesifisere et unikt filnavn. Vi anbefaler `ed25519`-algoritmen for bedre sikkerhet og ytelse [1].
+2.  **Generer en nøkkel for din konto** (f.eks. `ghbruker`). Bruk `-f` flagget for å spesifisere et unikt filnavn. Det anbefales å bruke `ed25519`-algoritmen for bedre sikkerhet og ytelse [1]. Vær oppmerksom at prompt-tegnet kan være noe annet enn `$` i Powershell. Det er heller ikke lagt inn output i eksemplene, kun selve kommandoen.
 
     ```powershell
-    ssh-keygen -t ed25519 -C "din-epost-for-ghbruker@example.com" -f ~/.ssh/id_ed25519_ghbruker
+    $ ssh-keygen -t ed25519 -C "din-epost-for-ghbruker@example.com" -f ~/.ssh/id_ed25519_ghbruker
     ```
 
 3.  **Generer en nøkkel for din andre konto** (f.eks. `brB`), og gi den et annet filnavn.
 
     ```powershell
-    ssh-keygen -t ed25519 -C "din-epost-for-ghbruker@example.com" -f ~/.ssh/id_ed25519_ghbruker
+    $ ssh-keygen -t ed25519 -C "din-epost-for-ghbruker@example.com" -f ~/.ssh/id_ed25519_ghbruker
     ```
 
-Når du blir spurt om en "passphrase", kan du trykke Enter for å la den være tom, eller angi et passord for ekstra sikkerhet. Trenger ikke å bruker "passphrase" her.
+Når du blir spurt om en "passphrase", kan du trykke Enter for å la den være tom, eller angi et passord for ekstra sikkerhet. Trenger ikke å bruke "passphrase" i vårt tilfelle.
 
 ### Steg 2: Legg til Nøkkel i SSH-Agenten
 
@@ -159,38 +159,37 @@ SSH-agenten er et bakgrunnsprogram som holder styr på SSH-nøklene dine og pass
 
     ```powershell
     # Sjekk statusen til agenten
-    Get-Service ssh-agent
+    $ Get-Service ssh-agent
 
     # Sett oppstartstypen til automatisk og start tjenesten
-    Set-Service -Name ssh-agent -StartupType Automatic
-    Start-Service ssh-agent
+    $ Set-Service -Name ssh-agent -StartupType Automatic
+    $ Start-Service ssh-agent
     ```
 
 2.  **Legg til den nye SSH-nøkkelen** i agenten:
 
     ```powershell
-    ssh-add ~/.ssh/id_ed25519_ghbruker
+    $ ssh-add ~/.ssh/id_ed25519_ghbruker
     
     ```
 
-### Steg 3: Legg til Offentlige Nøkler i GitHub
+### Steg 3: Legg til Offentlig Nøkkel i GitHub
 
-Hver GitHub-konto må kjenne til den offentlige delen av SSH-nøkkelen din for å kunne autentisere deg.
+En GitHub-konto må kjenne til den offentlige delen av SSH-nøkkelen din for å kunne autentisere deg.
 
-1.  **Kopier innholdet i den offentlige nøkkelen**. For konto `brA`:
+1.  **Kopier innholdet i den offentlige nøkkelen**. For konto `ghbruker`:
 
     ```powershell
-    Get-Content ~/.ssh/id_ed25519_ghbruker.pub | Set-Clipboard
+    $ Get-Content ~/.ssh/id_ed25519_ghbruker.pub | Set-Clipboard
     ```
 
 2.  **Naviger til GitHub-innstillingene**:
-    - Logg inn på GitHub-kontoen `brA`.
+    - Logg inn på GitHub-kontoen `ghbruker`.
     - Gå til **Settings** > **SSH and GPG keys**.
     - Klikk på **New SSH key**.
 
 3.  **Lim inn nøkkelen**: Gi den et beskrivende navn (f.eks. "Windows Laptop") og lim inn nøkkelen fra utklippstavlen.
 
-4.  **Gjenta prosessen** for konto `brB` med den tilhørende offentlige nøkkelen (`id_ed25519_brB.pub`).
 
 ### Steg 4: Konfigurer SSH-klienten (`~/.ssh/config`)
 
@@ -200,27 +199,20 @@ Dette er det viktigste steget. Du skal nå fortelle SSH-klienten hvilken nøkkel
 
     ```powershell
     # Oppretter filen hvis den ikke finnes
-    if (-not (Test-Path ~/.ssh/config)) { New-Item ~/.ssh/config }
+    $ if (-not (Test-Path ~/.ssh/config)) { New-Item ~/.ssh/config }
 
-    # Åpner filen i Notepad
-    notepad ~/.ssh/config
+    # Åpner filen i Notepad (notepad kan ha en del innstillinger med automatisk formattering osv., så det kan oppstå utfordringer med å beholde Markdown-formattering korrekt; spør om hjelp, hvis du opplever problemer med det)
+    $ notepad ~/.ssh/config
     ```
 
 2.  **Legg til følgende konfigurasjon**. Denne oppretter unike "Host"-alias for hver GitHub-konto.
 
     ```
-    # GitHub-konto 1 (brA)
-    Host github.com-brA
+    # GitHub-konto 1 (ghbruker)
+    Host github.com-ghbruker
         HostName github.com
         User git
-        IdentityFile ~/.ssh/id_ed25519_brA
-        IdentitiesOnly yes
-
-    # GitHub-konto 2 (brB)
-    Host github.com-brB
-        HostName github.com
-        User git
-        IdentityFile ~/.ssh/id_ed25519_brB
+        IdentityFile ~/.ssh/id_ed25519_ghbruker
         IdentitiesOnly yes
     ```
 
@@ -230,7 +222,7 @@ Dette er det viktigste steget. Du skal nå fortelle SSH-klienten hvilken nøkkel
 | `HostName`     | Det faktiske vertsnavnet du kobler til (alltid `github.com`).                                           |
 | `User`         | Brukernavnet for SSH-tilkoblingen (alltid `git` for GitHub).                                            |
 | `IdentityFile` | Stien til den private SSH-nøkkelen som skal brukes for denne verten.                                    |
-| `IdentitiesOnly`| `yes` sikrer at SSH kun prøver nøkkelen spesifisert i `IdentityFile`, og ikke alle nøkler i agenten [2]. |
+| `IdentitiesOnly`| `yes` sikrer at SSH kun prøver nøkkelen spesifisert i `IdentityFile`, og ikke alle nøkler i agenten.   |
 
 
 ### Steg 5: Klon og Push med Riktig Konto
@@ -240,38 +232,31 @@ Nå som alt er konfigurert, må du bruke de nye `Host`-aliasene i Git-kommandoen
 -   **For å klone et repository** fra konto `brA`:
 
     ```powershell
-    git clone git@github.com-brA:brA/repository-navn.git
+    $ git clone git@github.com-ghbruker:ghbruker/repository-navn.git
     ```
 
 -   **For et eksisterende repository**, må du oppdatere `remote`-URL-en:
 
     ```powershell
     # Naviger til repository-mappen
-    cd sti/til/ditt/repo
+    $ cd sti/til/ditt/repo
 
     # Oppdater URL-en til å bruke det nye aliaset
-    git remote set-url origin git@github.com-brA:brA/repository-navn.git
+    $ git remote set-url origin git@github.com-ghbruker:ghbruker/repository-navn.git
     ```
 
 ### Steg 6: Verifiser Tilkoblingen
 
-Du kan enkelt teste at hver konfigurasjon fungerer som forventet.
+Du kan enkelt teste at konfigurasjon fungerer som forventet.
 
 -   **Test tilkobling for `brA`**:
 
     ```powershell
-    ssh -T git@github.com-brA
+    ssh -T git@github.com-ghbruker
     ```
 
-    Forventet svar: `Hi brA! You've successfully authenticated...`
+    Forventet svar: `Hi brA! You've successfully authenticated, but Github does not provide shell access.`
 
--   **Test tilkobling for `brB`**:
-
-    ```powershell
-    ssh -T git@github.com-brB
-    ```
-
-    Forventet svar: `Hi brB! You've successfully authenticated...`
 
 ---
 
