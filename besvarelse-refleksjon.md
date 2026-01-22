@@ -10,15 +10,17 @@ Skriv dine svar på refleksjonsspørsmålene fra hver oppgave her.
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
-
+***Enkel installasjon -*** kan starte postres med bare en kommando, trenger ingen konfigurasjon eller noe andre bakgrunnsprosesser som krever ekstra tid og dypere tekniske kunnskaper(docker.com, 2022).
+***Isolasjon -*** Databasen er i sin egen isolert container, dermed blir det ingen forstyrrelser med andre programvarer selv når de kjører på samme server og kan kjøre flere versjoner samtidig uten konflikt(rd-datarespons.no).
+***"Kjører på samme server" -*** Fjerner problemet "men det fungerer på min PC", da når man er i en container så jobber man i prinsippet på "den samme maskinen"(rd-datarespons.no).
+***Av/På -*** Like lett å avslutte postres som å starte.
 ---
 
 ### Spørsmål 2: Hva betyr "persistent volum" i docker-compose.yml? Hvorfor er det viktig?
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
+Det er der Docker lagrer data permanent utenfor containerenes levetid. For selv da om man avslutter containeren, sletter eller omstarter så vil data overleve(docs.docker.com).
 
 ---
 
@@ -26,7 +28,7 @@ Skriv dine svar på refleksjonsspørsmålene fra hver oppgave her.
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
+Det vil stoppe og fjerne containere som er lagd med up. Data vil ikke bli mistet med mindre man tvinger det med "-V"(docs.docker.com).
 
 ---
 
