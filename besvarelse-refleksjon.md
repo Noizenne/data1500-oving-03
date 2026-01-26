@@ -11,16 +11,18 @@ Skriv dine svar på refleksjonsspørsmålene fra hver oppgave her.
 **Ditt svar:**
 
 ***Enkel installasjon -*** kan starte postres med bare en kommando, trenger ingen konfigurasjon eller noe andre bakgrunnsprosesser som krever ekstra tid og dypere tekniske kunnskaper(docker.com, 2022).
-***Isolasjon -*** Databasen er i sin egen isolert container, dermed blir det ingen forstyrrelser med andre programvarer selv når de kjører på samme server og kan kjøre flere versjoner samtidig uten konflikt(rd-datarespons.no).
+***Isolasjon -*** Databasen er i sin egen isolert container, uavhengig av os-en, dermed blir det ingen forstyrrelser med andre programvarer selv når de kjører på samme server og kan kjøre flere versjoner samtidig uten konflikt(rd-datarespons.no).
 ***"Kjører på samme server" -*** Fjerner problemet "men det fungerer på min PC", da når man er i en container så jobber man i prinsippet på "den samme maskinen"(rd-datarespons.no).
-***Av/På -*** Like lett å avslutte postres som å starte.
+***Av/På -*** Like lett å avslutte postgres som å starte.
+
+- 
 ---
 
 ### Spørsmål 2: Hva betyr "persistent volum" i docker-compose.yml? Hvorfor er det viktig?
 
 **Ditt svar:**
 
-Det er der Docker lagrer data permanent utenfor containerenes levetid. For selv da om man avslutter containeren, sletter eller omstarter så vil data overleve(docs.docker.com).
+Volumes er det som blir brukt for å lagre data på harddisken. Det er der Docker lagrer data permanent utenfor containerenes levetid. For selv da om man avslutter containeren, sletter eller omstarter så vil data overleve(docs.docker.com).
 
 ---
 
@@ -36,16 +38,25 @@ Det vil stoppe og fjerne containere som er lagd med up. Data vil ikke bli mistet
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
+Første kjøring så opprettet det et statndard nettverk for å la tjenestene kommunisere med hverandre, så oppretter og starter Docker nye containere basert på de byggede bildene, fordi -d flagget blir brukt så startes tjenestene i bakgrunnen og evt spesifiserte volumer opprettes for å lagre data.
 
+På andre kjøring så bruker Docker allerede eksisterne ressurser/funksjoner og unngår unødvendig opprettelser og bygging med minre man spesifiserer det.
+
+- Å bygge bilder for tjenester i Docker betyr å opprette en selvstendig og portabel passe av applikasjonen som kan kjøres i containere. Dette gir konsistens og isolasjon for applikasjoner uavhengig av hvor de kjører.
 ---
 
 ### Spørsmål 5: Hvordan ville du delt docker-compose.yml-filen med en annen student? Hvilke sikkerhetshensyn må du ta?
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
+Forskjellige måter å dele på:
+1. Git og Github
+2. Som vedlegg i en epost
+3. Komprimere og sende over via chat applikasjoner som Discord.
 
+Man burde passe på at man ikke deler sensitive data(f.eks passord), og da bruke miljøvariabler eller .env-filer som ikke deles.
+
+- Miljøvariabler er dynamisk navngitte verdier som kan påvirke oppførselen til programvare og prosesser i et operativsystem. De fungerer som innstillinger som kan brukes av programmer for å tilpasse oppførselen deres uten at man må endre koden og brukes ofte til å lagre konfigurasjonsinformasjon, som databasenavn, brukernavn, passord og API-nøkler.Fordelene er at sensitive data kan holdes utenfor kildekoden og endringer kan gjøres uten å endre koden, noe som gjør det lettere å tilpasse applikasjonen til forskjellige miljøer.
 ---
 
 ## Oppgave 2: SQL-spørringer og databaseskjema
@@ -54,8 +65,9 @@ Det vil stoppe og fjerne containere som er lagd med up. Data vil ikke bli mistet
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
+INNER JOIN: 
 
+LEFT JOIN:
 ---
 
 ### Spørsmål 2: Hvorfor bruker vi fremmednøkler? Hva skjer hvis du prøver å slette et program som har studenter?
