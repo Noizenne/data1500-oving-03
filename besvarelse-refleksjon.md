@@ -10,7 +10,7 @@ Skriv dine svar på refleksjonsspørsmålene fra hver oppgave her.
 
 **Ditt svar:**
 
-***Enkel installasjon -*** kan starte postres med bare en kommando, trenger ingen konfigurasjon eller noe andre bakgrunnsprosesser som krever ekstra tid og dypere tekniske kunnskaper(docker.com, 2022).
+***Enkel installasjon -*** kan starte postgres med bare en kommando, trenger ingen konfigurasjon eller noe andre bakgrunnsprosesser som krever ekstra tid og dypere tekniske kunnskaper(docker.com, 2022).
 ***Isolasjon -*** Databasen er i sin egen isolert container, uavhengig av os-en, dermed blir det ingen forstyrrelser med andre programvarer selv når de kjører på samme server og kan kjøre flere versjoner samtidig uten konflikt(rd-datarespons.no).
 ***"Kjører på samme server" -*** Fjerner problemet "men det fungerer på min PC", da når man er i en container så jobber man i prinsippet på "den samme maskinen"(rd-datarespons.no).
 ***Av/På -*** Like lett å avslutte postgres som å starte.
@@ -22,7 +22,7 @@ Skriv dine svar på refleksjonsspørsmålene fra hver oppgave her.
 
 **Ditt svar:**
 
-Volumes er det som blir brukt for å lagre data på harddisken. Det er der Docker lagrer data permanent utenfor containerenes levetid. For selv da om man avslutter containeren, sletter eller omstarter så vil data overleve(docs.docker.com).
+`Volumes` er det som blir brukt for å lagre data på harddisken. Det er der Docker lagrer data permanent utenfor containerenes levetid. For selv da om man avslutter containeren, sletter eller omstarter så vil data overleve(docs.docker.com).
 
 ---
 
@@ -38,7 +38,7 @@ Det vil stoppe og fjerne containere som er lagd med up. Data vil ikke bli mistet
 
 **Ditt svar:**
 
-Første kjøring så opprettet det et statndard nettverk for å la tjenestene kommunisere med hverandre, så oppretter og starter Docker nye containere basert på de byggede bildene, fordi -d flagget blir brukt så startes tjenestene i bakgrunnen og evt spesifiserte volumer opprettes for å lagre data.
+Første kjøring så opprettet det et statndard nettverk for å la tjenestene kommunisere med hverandre, så oppretter og starter Docker nye containere basert på de byggede bildene, fordi `-d` flagget blir brukt så startes tjenestene i bakgrunnen og evt spesifiserte volumer opprettes for å lagre data.
 
 På andre kjøring så bruker Docker allerede eksisterne ressurser/funksjoner og unngår unødvendig opprettelser og bygging med minre man spesifiserer det.
 
@@ -56,7 +56,7 @@ Forskjellige måter å dele på:
 
 Man burde passe på at man ikke deler sensitive data(f.eks passord), og da bruke miljøvariabler eller .env-filer som ikke deles.
 
-- Miljøvariabler er dynamisk navngitte verdier som kan påvirke oppførselen til programvare og prosesser i et operativsystem. De fungerer som innstillinger som kan brukes av programmer for å tilpasse oppførselen deres uten at man må endre koden og brukes ofte til å lagre konfigurasjonsinformasjon, som databasenavn, brukernavn, passord og API-nøkler.Fordelene er at sensitive data kan holdes utenfor kildekoden og endringer kan gjøres uten å endre koden, noe som gjør det lettere å tilpasse applikasjonen til forskjellige miljøer.
+- `Miljøvariabler` er dynamisk navngitte verdier som kan påvirke oppførselen til programvare og prosesser i et operativsystem. De fungerer som innstillinger som kan brukes av programmer for å tilpasse oppførselen deres uten at man må endre koden og brukes ofte til å lagre konfigurasjonsinformasjon, som databasenavn, brukernavn, passord og API-nøkler.Fordelene er at sensitive data kan holdes utenfor kildekoden og endringer kan gjøres uten å endre koden, noe som gjør det lettere å tilpasse applikasjonen til forskjellige miljøer.
 ---
 
 ## Oppgave 2: SQL-spørringer og databaseskjema
@@ -65,16 +65,21 @@ Man burde passe på at man ikke deler sensitive data(f.eks passord), og da bruke
 
 **Ditt svar:**
 
-INNER JOIN: 
+`INNER JOIN`: Bruker dette for å velge data fra to eller flere relaterte tabeller og den returnerer rader som har marchende verdiere i alle tabeller. Altså brukes det til når bare data fra begge tabeller eksisterer. F.eks kunder som har plassert ordre.
 
-LEFT JOIN:
+`LEFT JOIN(LEFT OUTER JOIN)`: Bruker dette for å velge rader fra en tabell som har eller ikke har tilsvarende rader i andre tabeller. Kan altså også være NULL. Brukes npr man trenger alle data fra en hovedtabell for så å se om det eksisterer i en sekundær tabell. F.eks alle studenter, uavhengig om de er registrert i et emne eller ikke.
+
+Forskjellen er altså at INNER JOIN returnerer bare matchende verdier i begge tabeller, mens LEFT JOIN alle rader fra venstre tabell og de matchende verdiene fra høyre tabell, verdiene på høyre side vil få en NULL verdi.
+
 ---
 
 ### Spørsmål 2: Hvorfor bruker vi fremmednøkler? Hva skjer hvis du prøver å slette et program som har studenter?
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
+Det bruker for å sikre referensiell integritet, slik at referanser mellom tabeller peker på gyldige rader. Det kan også hindre i å legge til verdier som ikke har noe tilsvarende verdier i den refererte tabellen. `Fremmednøkler` opprettholder også konsistens ved å automatisk oppdatere eller slette relaterte rader i den refererte tabellen når forandringer skjer i hovedtabellen. 
+
+Hvis man prøver å slette et program som har studenter, så vil databasen nekte slettigen(som er standard) med mindre er spesifisert `ON DELETE CASCADE` eller tilsvarende regel som sier ellers.
 
 ---
 
@@ -82,7 +87,15 @@ LEFT JOIN:
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
+Aggregatfunksjoner er som "oppsummeringsverktøy". Istedet for å på hver enkelt rad for seg selv, tar de en hel bunt med rader og regner dem om til en enkelt verdi.
+De 5 vanligste funksjonene:
+- `COUNT()` : Teller antall rader
+- `SUM()` : Legger sammen alle verdiene i en kolonne
+- `AVG()` : Regner ut gjennomsnittet
+- `MIN()` : Finner den laveste verdien
+- `MAX()` : Finner den høyeste verdien
+
+`GROUP BY` er en metode som splitter rader til grupper og bruker aggregatfunksjoner til hvert gruppe. Det er altså en funksjon som beregner en enkelt verdi basert på flere rader.
 
 ---
 
@@ -90,7 +103,9 @@ LEFT JOIN:
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
+`Indeks` er som et stikkord, dette kan databasen bruke til å hoppe rett til riktig sted. 
+Uten indeks ville databasen lest rader en etter en, og det krever enorme mengder med disklesing og tid. 
+Med indeks så finner den seg rett til raden vi faktisk leter etter og bruker dermed en mer effektiv søkealgoritme som ofte er kalt for `B-Tree` for å finne frem. 
 
 ---
 
@@ -98,8 +113,35 @@ LEFT JOIN:
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
+- Ikke bruke `SELECT *` som henter alle kolonner, det blir dyrt for det øker mengden data som må sendes over nettverket. Spesifiser nøyaktig kolonnene man trenger `SELECT navnm epost FROM..`.
+- Bruke indekser, og dekke to kolonner som en indeks.
+- Bruke INNER JOIN hvis man vet det finnes treff i begge tabeller.
 
+---
+1. **Hent alle studenter som ikke har noen emneregistreringer**
+select s.fornavn, s.student_id 
+from studenter s
+left join emneregistreringer er on s.student_id = er.student_id 
+where s.student_id is null; !!!Hjelp, ingen res
+2. **Hent alle emner som ingen studenter er registrert på**
+select e.emne_navn from emner e
+left join studenter s on e.emne_id = s.student_id
+where e.emne_navn is null; !!!Hjelp, ingen res
+3. **Hent studentene med høyeste karakter per emne**
+select e.emne_navn, s.fornavn, s.etternavn, er.karakter
+from emneregistreringer er join studenter s on s.student_id = er.student_id
+join emner e on er.emne_id = e.emne_id
+where er.karakter = (select max(karakter) from emneregistreringer where emne_id = er.emne_id);
+4. **Lag en rapport som viser hver student, deres program, og antall emner de er registrert på**
+select s.fornavn, s.etternavn, p.program_navn, count(er.registrering_id) as antall_emner
+from studenter s left join programmer p on s.program_id = p.program_id
+left join emneregistreringer er on s.student_id = er.student_id group by s.student_id, s.fornavn, s.etternavn, p.program_navn;
+5. **Hent alle studenter som er registrert på både DATA1500 og DATA1100**
+select s.fornavn, s.etternavn from studenter s
+join emneregistreringer er on s.student_id = er.student_id
+join emner e on er.emne_id = e.emne_id
+where e.emne_kode in ('DATA1500', 'DATA1100') group by s.student_id, s.fornavn, s.etternavn
+having count(distinct e.emne_kode) = 2;
 ---
 
 ## Oppgave 3: Brukeradministrasjon og GRANT
