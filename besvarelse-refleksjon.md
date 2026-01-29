@@ -150,15 +150,28 @@ having count(distinct e.emne_kode) = 2;
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
+Principle of Least Privilege - en av grunnpilarene i IT-sikkerhet.
+Det betyr at en bruker, program eller prossess kun skal ha de rettighetene som er **strengt nødvendige** for å utføre en spesifikk oppgave og ingenting mer.
 
+Det gjelder både:
+- Omfang(Hvilke data man kan se(f.eks. kun egne rader i en tabell)).
+- Funksjon(Hva man kan gjøre(f.eks. kun, lese og ikke endre eller slette noe)).
+- Tid(Hvor lenge man har tilgang(f.eks. midlertidig tilgang til et prosjekt)).
+
+Grunner til hvorfor det er viktig:
+
+- Beskyttelse av skade ved angrep: Si hvis en studentbruker blir angrepet, og den brukeren har admin-rettigheter, så kan angriperen slette hele databasen. Hadde studentbrukeren derimot bare hatt tilgang til sitt eget view, så ville skadepotensialet blitt begrenset til kun studenten sin data.
+
+- Beskyttelse mot menneskelige feil: Brukere kan gjøre feil. 
+
+- GDPR: Prinsippet er lovpålagt i mange sammenhenger. F.eks krever GDPR at personopplysninger ikke skal være tilgjengelige for flere enn de som faktsik trenger dem for å gjøre jobben sin.
 ---
 
 ### Spørsmål 2: Hva er forskjellen mellom en bruker og en rolle i PostgreSQL?
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
+Brukeren er definert som hvem som gjør det(innlogging) og rollen er definert som hva som kan gjøres(rettigheter).
 
 ---
 
@@ -166,15 +179,25 @@ having count(distinct e.emne_kode) = 2;
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
+- **Skalerbarhet**: Med f.eks 500 studenter, uten roller så måtte man kjøre 500 `GRANT`-spørringer hver gang man oppretter en ny tabell som studente skal se, men med roller så kjører du en `GRANT`-spørring til en f.eks student_self_view og alle 500 studenter får tilgang fordi de er medlemmer av rollen.
 
+- **Sikkerhet**: Ved å bruke roller så er det enkelt å se hva en bruker kan og ikke kan gjøre. Det gjør det altså oversiktlig og man får god kontroll på det istedet for hvis rettighetene var spredt over mange tabeller og funksjoner.
+
+- **Konsistens**: En rolle behandles likt og det gjør risikoen for at en bruker får tilgang til noe, mens en annen ikke får det fordi begge ligger i samme rolle. Det er lett å glemme hvem som har hvilke rettigheter hvis man manuelt skulle gitt de til enkeltpersoner.
+
+- **Endring**: Enkelt å fjerne eller bytte rolle enn å fjerne hundrevis av enkeltrettigheter manuelt fra en enkeltperson.
 ---
 
 ### Spørsmål 4: Hva skjer hvis du gir en bruker `DROP` rettighet? Hvilke sikkerhetsproblemer kan det skape?
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
+Det brukes for å slette objekter permanent, slik som tabeller, views, indekser eller hele databaser. 
+
+Sikkerhetsproblemer som kan oppstå:
+- Den mest åpenbare risikoen er permanent tap av data. For i motsetning til `DELETE`(som sletter rader i en tabell), fjerner f.eks `DROP TABLE` selve beholderen og alt av innhold. 
+- DoS(Denial of Service) fordi selv om man har en backup, så tar det tid å gjenopprette. Appen i bruk vil krasje da tabellen ikke lenger blir funnet som forventet og skaper nedetid for alle brukere.
+- Det vil også ødelegge dataintegritet da tabellene henger sammen via relasjoner(fk) og kan skape kaos i databasestrukturen og logikken.
 
 ---
 
@@ -182,7 +205,42 @@ having count(distinct e.emne_kode) = 2;
 
 **Ditt svar:**
 
-[Skriv ditt svar her]
+Lage en view-tabell for å se på sine egne karakterer med studenten sine andre informasjon og gi rollen tilgang til view-tabellen med bare select.
+
+---
+1. **Opprett en rolle `program_ansvarlig` som kan lese og oppdatere programmer-tabellen, men ikke slette**
+* I admin:
+
+- create role program_ansvarlig login password 'program_ansvarlig';
+
+- grant select, update on programmer to program_ansvarlig ;
+
+* I program_ansvarlig:
+- select * from programmer;
+
+- update programmer set beskrivelse = 'Bachelor i Informatikk(I)' where program_id = 1;
+
+2. **Opprett en rolle `student_self_view` som bare kan se sitt eget studentdata (hint: bruk en VIEW)**
+* I admin:
+
+- create role student_self_view login password 'student_self_view';
+- create view self_view as select * from studenter where epost = SESSION_USER;
+- grant select on self_view to student_self_view;
+
+* I student_self_view:
+
+- select * from self_view;
+3. **Gi `foreleser_role` tilgang til å lese fra `student_view` (som allerede er opprettet)**
+
+- grant select on self_view to foreleser_role;
+
+4. **Opprett en rolle `backup_bruker` som bare har SELECT-rettighet på alle tabeller**
+
+- grant select on programmer,studenter, emneregistreringer, emner to backup_bruker;
+
+5. **Lag en oversikt over alle roller og deres rettigheter**
+
+- select grantee, privilege_type from  information_schema.role_table_grants;
 
 ---
 
