@@ -254,19 +254,95 @@ Bruk denne delen til å dokumentere interessante funn, problemer du møtte, elle
 ## Oppgave 4: Brukeradministrasjon og GRANT
 
 1. **Hva er Row-Level Security og hvorfor er det viktig?**
-   - Svar her...
+- Row-level security (RLS) er en sikkerhetsmekanisme i databasesystemer (som PostgreSQL, SQL Server og Oracle) som lar deg kontrollere tilgangen til individuelle rader i en tabell basert på hvem som utfører spørringen.
+- I stedet for at en bruker enten har tilgang til hele tabellen eller ingenting, fungerer RLS som et usynlig filter som sørger for at brukeren kun ser de dataene de har rett til å se.
+- Uten RLS er tilgangskontroll ofte "alt eller ingenting" på tabellnivå. Med RLS aktivert, legger databasen til en logisk begrensning på hver eneste spørring som kjøres.
+Tenk på det som en automatisk WHERE-klausul som brukeren ikke kan fjerne eller endre.
+- Se for deg en tabell med lønnsliper for alle ansatte i en bedrift:
+
+   **Uten RLS**: En HR-medarbeider med lesetilgang ser alle radene i tabellen.
+
+   **Med RLS**: Når "Ola" logger inn og spør om data fra tabellen, legger databasen automatisk til filteret WHERE ansatt_id = 'Ola'. Han ser kun sin egen linje, selv om han bruker nøyaktig samme spørring som HR.
+Hvorfor er RLS viktig?
+
+   **Det er flere grunner til at RLS har blitt en standard for moderne applikasjonsutvikling:**
+
+   - **Sikkerhet i dybden (Defense in Depth)**: Selv om det skulle være en sikkerhetsbrist i selve applikasjonskoden din, vil databasen fortsatt nekte å utlevere rader som brukeren ikke eier.
+
+   - **Forenklet applikasjonslogikk**: Du slipper å skrive kompliserte filtreringsregler i hver eneste funksjon i koden din. Logikken ligger sentralt i databasen.
+
+   - **Multi-tenant arkitektur**: Hvis du bygger en tjeneste (SaaS) der mange ulike bedrifter lagrer data i samme database, er RLS den tryggeste måten å garantere at "Bedrift A" aldri ved et uhell kan se dataene til "Bedrift B".
+
+   - **Samsvar (Compliance)**: For personvernregler som GDPR, gir RLS deg streng kontroll over hvem som har innsyn i sensitive personopplysninger.
+
+   RLS er ekstremt kraftig, men det kan påvirke ytelsen noe siden databasen må evaluere tilgangsregler for hver rad i en spørring. God indeksering er derfor avgjørende når man bruker RLS.   
 
 2. **Hva er forskjellen mellom RLS og kolonnebegrenset tilgang?**
-   - Svar her...
+   - Tenk på en tabell som et rutenett (et Excel-ark). RLS kutter tabellen **horisontalt**, mens kolonnebegrensninger kutter den **vertikalt**.
+   1. **Row-Level Security (Horisontal)**
+   
+      RLS bestemmer hvilke rader en bruker får se. Innholdet i alle kolonnene er tilgjengelige, men bare for de spesifikke postene brukeren har rett til å se.
+
+      Filteret: Baseres ofte på identitet (f.eks. "Vis kun rader der selger_id er meg selv").
+
+      
+
+   2. **Kolonnebegrenset tilgang (Vertikal)**
+   
+      Dette bestemmer hvilke typer informasjon (kolonner) en bruker får se for alle rader i tabellen.
+
+      Filteret: Baseres på feltets sensitivitet (f.eks. "Skjul kolonnen personnummer for alle utenom HR").
+
+      Brukstilfelle: Alle ansatte kan se kollegene sine i en ansattliste (alle rader), men de får bare se kolonnene navn og avdeling. Kolonnen lønn er skjult eller returnerer NULL.
 
 3. **Hvordan ville du implementert at en student bare kan se karakterer for sitt eget program?**
-   - Svar her...
+   1. Knytte studenten til et program hvor program og hvor karakterene er knyttet til studenten
+   2. Aktivere RLS på tabellen karakterer med ``ALTER TABLE karakterer ENABLE ROW LEVEL SECURITY;``
+   3. Lage en policy. 
+
+  ```
+   CREATE POLICY student_see_own_grades ON karakterer
+    FOR SELECT
+    USING (
+        student_id = (
+            SELECT student_id FROM bruker_student_mapping 
+            WHERE brukernavn = current_user
+        )
+    );
+   ```
 
 4. **Hva er sikkerhetsproblemene ved å bruke views i stedet for RLS?**
-   - Svar her...
+   - Mindre robust enn RLS.
+   - Views er mer designet for organisering av data og ikke nødvendigvis for å stå imot målrettet forsøk på å omgå sikkerheten. 
+
+   - Sikkerhetsutfordringer basert på bruk av kun views:
+      1. **"Leakage" via Optimizer (Lekkasje av data)**
+
+      Dette er det mest tekniske og alvorlige problemet. Database-administratoren (query optimizer) prøver alltid å gjøre en spørring så rask som mulig. Noen ganger kan den flytte brukerdefinerte funksjoner eller operasjoner før filteret i viewet blir brukt.
+
+         Risiko: En angriper kan skrive en smart SQL-spørring med en funksjon som kaster en feilmelding hvis en bestemt verdi finnes (f.eks. 1/0 hvis lønn > 1.000.000). Selv om viewet filtrerer bort raden til slutt, kan feilmeldingen avsløre at dataene finnes. RLS er dypere integrert i motoren og hindrer slike lekkasjer mer effektivt.
+
+      2. **Vedlikehold og "Human Error"**
+
+      Når du bruker views, må du sørge for at brukerne kun har tilgang til viewet, og absolutt ingen tilgang til den underliggende tabellen.
+
+         Risiko: Hvis en administrator ved en feil gir SELECT-tilgang til hovedtabellen til en gruppe, er hele sikkerhetsoppsettet med views bortkastet. Med RLS ligger beskyttelsen på selve dataene (tabellen); uansett hvordan du prøver å nå tabellen, er filteret aktivt.
+
+      3. **Eksplosjon av antall views (Management Complexity)**
+
+      Hvis du skal filtrere data basert på mange ulike kriterier (f.eks. én regel for studenter, én for lærere, én for sensorer), ender du ofte opp med et kaos av views: vw_student_karakter, vw_teacher_karakter, osv.
+
+         Risiko: Jo flere views du har, jo større er sjansen for at ett av dem blir feilkonfigurert. RLS lar deg ha én tabell og ett sett med sentrale regler som håndterer alle rollene dynamisk.
+
+      4. **Problemer med Row Leakage i statistikk**
+
+      Databaser lagrer statistikk om datafordeling for å planlegge spørringer.
+
+         Risiko: I enkelte konfigurasjoner kan brukere med tilgang til et view utnytte systemkataloger eller statistikk-visninger til å gjette seg frem til verdier i rader de egentlig ikke skal se, fordi statistikken er basert på hele tabellen.
 
 5. **Hvordan ville du testet at RLS-policyer fungerer korrekt?**
-   - Svar her...
+   - Tester ved å opprette roller og brukerere for å se om databasen oppfører seg som forventet. 
+
 
 ---
 
